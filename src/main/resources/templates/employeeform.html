@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form action="#" th:action="@{/processemployee}" th:object="${employee}" method="post">
+    <input type="hidden" th:field="*{id}"/>
+    DEPARTMENT: <select name="department" id="department" class="customer-select" th:field="*{department}">
+    <option th:each="dep: ${departments}"
+            th:value="${dep.id}"
+            th:text="${dep.name}">
+    </option><br/>
+</select>
+    First Name: <input type="text" th:field="*{firstName}"/>
+    <span th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}"></span><br/>
+    Last Name: <input type="text" th:field="*{lastName}"/>
+    <span th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}"></span><br/>
+    Position: <input type="text" th:field="*{position}"/>
+    <span th:if="${#fields.hasErrors('position')}" th:errors="*{position}"></span><br/>
+    <input type="submit" value="Submit">
+</form>
+</body>
+</html>
