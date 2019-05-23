@@ -1,21 +1,25 @@
 package com.example.demo;
 
+import com.cloudinary.utils.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.io.IOException;
+import java.util.Map;
+
 @Controller
 public class HomeController {
     @Autowired
     DepartmentRepository departmentRepository;
     @Autowired
     EmployeeRepository employeeRepository;
+    @Autowired
+    CloudinaryConfig cloudc;
 
     @RequestMapping("/")
     public String listdepartment(Model model){
@@ -59,26 +63,34 @@ public class HomeController {
     @RequestMapping("/addemployees/{id}")
     public String addEmployees(@PathVariable("id") long id, Model model){
         model.addAttribute("department", departmentRepository.findById(id).get() );
-
-        return "redirect:/addemployees";
-    }
-
-
-    @GetMapping("/addemployees")
-    public String employeeForm(Model model){
-        model.addAttribute("departments", departmentRepository.findAll());
         model.addAttribute("employee", new Employee());
-
         return "employeeform";
     }
 
+
+//    @GetMapping("/addemployees")
+//    public String employeeForm(Model model){
+//        model.addAttribute("departments", departmentRepository.findAll());
+////        model.addAttribute("employee", new Employee());
+//
+//        return "employeeform";
+//    }
+
     @PostMapping("/processemployee")
-    public String processForm(@Valid Employee employee,BindingResult result){
+    public String processForm(@RequestParam("file") MultipartFile file, @Valid Employee employee, BindingResult result){
         if (result.hasErrors()){
             return "employeeform";
         }
+        try {
+            Map uploadResult= cloudc.upload(file.getBytes(),
+                    ObjectUtils.asMap("resourcetype", "auto"));
+            employee.setHeadshot(uploadResult.get("url").toString());
+            employeeRepository.save(employee);
+        } catch (IOException e){
+            e.printStackTrace();
+            return "redirect:/add";
+        }
 
-        employeeRepository.save(employee);
         return "redirect:/";
 
     }
